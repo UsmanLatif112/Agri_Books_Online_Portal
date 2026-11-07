@@ -9,7 +9,7 @@
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 dash-hero">
     <div>
       <h1 class="h3 mb-1">Vendors</h1>
-      <p class="text-muted mb-0">Supplier balances and ledgers · view only</p>
+      <p class="text-muted mb-0">Supplier balances and ledgers</p>
     </div>
   </div>
 
@@ -22,7 +22,7 @@
         <div class="card-body d-flex justify-content-between align-items-start">
           <div>
             <p class="text-muted small mb-1">Vendors</p>
-            <h3 class="mb-0 fw-bold">{{ vendors|length }}</h3>
+            <h3 class="mb-0 fw-bold">{{ total_records }}</h3>
           </div>
           <div class="stat-icon bg-success-subtle text-success"><i class="fa-solid fa-building"></i></div>
         </div>
@@ -73,53 +73,46 @@
         </button>
       </div>
     </div>
-    <div class="table-responsive">
-      <table class="table mb-0 align-middle portal-search-table w-100" id="vendors-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Status</th>
-            <th class="text-end">Opening</th>
-            <th class="text-end">Balance</th>
-            <th class="col-actions">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for v in vendors %}
-          <tr>
-            <td class="fw-semibold">{{ v.name }}</td>
-            <td>{{ v.phone or '—' }}</td>
-            <td class="text-truncate" style="max-width:160px" title="{{ v.address or '' }}">{{ v.address or '—' }}</td>
-            <td>
-              {% if v.is_active is none or v.is_active %}
-              <span class="badge bg-success-subtle text-success border">Active</span>
-              {% else %}
-              <span class="badge bg-secondary-subtle text-secondary border">Inactive</span>
-              {% endif %}
-            </td>
-            <td class="text-end">{{ '%.2f'|format((v.opening_balance or 0)|float) }}</td>
-            <td class="text-end {% if (v.balance or 0)|float > 0 %}text-warning{% elif (v.balance or 0)|float < 0 %}text-success{% endif %}">
-              {{ '%.2f'|format((v.balance or 0)|float) }}
-            </td>
-            <td class="col-actions">
-              <div class="table-actions">
-                <a href="{{ url_for('company.vendor_ledger', vendor_id=v.id) }}" class="action-icon-btn" title="Ledger">
-                  <i class="fa-solid fa-up-right-from-square"></i>
-                </a>
-              </div>
-            </td>
-          </tr>
-          {% else %}
-          <tr><td colspan="7" class="text-muted p-3">No vendors.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% with endpoint='company.vendors' %}
-    {% include 'partials/list_pagination.html' %}
-    {% endwith %}
+    <table class="table datatable mb-0 align-middle w-100" id="vendors-table" data-empty-table="No vendors.">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Status</th>
+          <th class="text-end">Opening</th>
+          <th class="text-end">Balance</th>
+          <th class="col-actions">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vendors %}
+        <tr>
+          <td class="fw-semibold">{{ v.name }}</td>
+          <td>{{ v.phone or '—' }}</td>
+          <td class="text-truncate" style="max-width:160px" title="{{ v.address or '' }}">{{ v.address or '—' }}</td>
+          <td>
+            {% if v.is_active is none or v.is_active %}
+            <span class="badge bg-success-subtle text-success border">Active</span>
+            {% else %}
+            <span class="badge bg-secondary-subtle text-secondary border">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="text-end">{{ '%.2f'|format((v.opening_balance or 0)|float) }}</td>
+          <td class="text-end {% if (v.balance or 0)|float > 0 %}text-warning{% elif (v.balance or 0)|float < 0 %}text-success{% endif %}">
+            {{ '%.2f'|format((v.balance or 0)|float) }}
+          </td>
+          <td class="col-actions">
+            <div class="table-actions">
+              <a href="{{ url_for('company.vendor_ledger', vendor_id=v.id) }}" class="action-icon-btn" title="Ledger">
+                <i class="fa-solid fa-up-right-from-square"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
   {% endif %}
 </div>
