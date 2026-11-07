@@ -54,8 +54,6 @@ def create_app(config_object: type = Config) -> Flask:
         brand_is_suite = True
 
         if current_user.is_authenticated and not current_user.is_super_admin():
-            from portal.services.branding_sync import hydrate_company_logo
-
             company = getattr(current_user, "company", None)
             display = (company.name if company else "") or ""
             brand_name = display.strip() or "Business"
@@ -63,11 +61,10 @@ def create_app(config_object: type = Config) -> Flask:
             brand_is_suite = False
             brand_logo = None
             brand_favicon = suite_favicon
-            if company and company.id:
-                hydrate_company_logo(company, getattr(current_user, "username", None))
-                if company.logo_data or company.logo_path:
-                    brand_logo = url_for("company_logo", company_id=company.id)
-                    brand_favicon = brand_logo
+            # Logos are managed only by Super Admin on the portal (no desktop/registry hydrate)
+            if company and company.id and (company.logo_data or company.logo_path):
+                brand_logo = url_for("company_logo", company_id=company.id)
+                brand_favicon = brand_logo
 
         return {
             "app_name": suite_name,
@@ -89,7 +86,6 @@ def create_app(config_object: type = Config) -> Flask:
         from flask import Response
 
         from portal.models import Company
-        from portal.services.branding_sync import hydrate_company_logo
 
         def _mime_for(data: bytes, logo_path: str | None) -> str | None:
             if data.startswith(b"\xff\xd8\xff"):
@@ -119,12 +115,6 @@ def create_app(config_object: type = Config) -> Flask:
 
         try:
             company = db.session.get(Company, company_id)
-            if company and not company.logo_data:
-                username = None
-                if current_user.is_authenticated and getattr(current_user, "company_id", None) == company_id:
-                    username = current_user.username
-                hydrate_company_logo(company, username)
-
             logo_path = getattr(company, "logo_path", None) if company else None
             disk = None
             if company and logo_path:
